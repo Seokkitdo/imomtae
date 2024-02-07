@@ -1,6 +1,18 @@
 apply plugin: "com.android.application"
 apply plugin: "com.facebook.react"
 
+
+project.ext.envConfigFiles = [
+        productiondebug: "env/.env.production",
+        productionrelease: "env/.env.production",
+        developmentrelease: "env/.env.development",
+        developmentdebug: "env/.env.development",
+        stagingrelease: "env/.env.staging",
+        stagingdebug: "env/.env.staging"
+]
+
+apply from: project(':react-native-config').projectDir.getPath() + "/dotenv.gradle"
+
 /**
  * This is the configuration block to customize your React Native Android app.
  * By default you don't need to apply any configuration, just uncomment the lines you need.
@@ -71,15 +83,42 @@ def jscFlavor = 'org.webkit:android-jsc:+'
 android {
     ndkVersion rootProject.ext.ndkVersion
 
-    compileSdkVersion rootProject.ext.compileSdkVersion
+    buildToolsVersion rootProject.ext.buildToolsVersion
+    compileSdk rootProject.ext.compileSdkVersion
 
     namespace "com.imomtae"
+
+    flavorDimensions "default"
+    productFlavors {
+        production {
+            minSdkVersion rootProject.ext.minSdkVersion
+            applicationId "com.imomtae"
+            targetSdkVersion rootProject.ext.targetSdkVersion
+            resValue "string", "build_config_package", "com.imomtae"
+        }
+        staging {
+            minSdkVersion rootProject.ext.minSdkVersion
+            applicationId "com.imomtae.staging"
+            targetSdkVersion rootProject.ext.targetSdkVersion
+            resValue "string", "build_config_package", "com.imomtae"
+        }
+        development {
+            minSdkVersion rootProject.ext.minSdkVersion
+            applicationId "com.imomtae.development"
+            targetSdkVersion rootProject.ext.targetSdkVersion
+            resValue "string", "build_config_package", "com.imomtae"
+        }
+    }
+
     defaultConfig {
         applicationId "com.imomtae"
         minSdkVersion rootProject.ext.minSdkVersion
         targetSdkVersion rootProject.ext.targetSdkVersion
         versionCode 1
         versionName "1.0"
+        resValue "string", "build_config_package", "com.usungsoft.bobsangScanner"
+        flavorDimensions "default"
+        multiDexEnabled true
     }
     signingConfigs {
         debug {
@@ -92,6 +131,7 @@ android {
     buildTypes {
         debug {
             signingConfig signingConfigs.debug
+            matchingFallbacks = ['debug', 'release']
         }
         release {
             // Caution! In production, you need to generate your own keystore file.
@@ -99,6 +139,10 @@ android {
             signingConfig signingConfigs.debug
             minifyEnabled enableProguardInReleaseBuilds
             proguardFiles getDefaultProguardFile("proguard-android.txt"), "proguard-rules.pro"
+        }
+        releaseStaging {
+            initWith release
+            matchingFallbacks = ['release']
         }
     }
 }
